@@ -8,6 +8,7 @@ struct word_parser {
     char *word;
     int word_len, word_capacity;
     int quotes_mode, was_quotes;
+    int parsed_no_space_symbols_cnt;
 };
 
 
@@ -24,6 +25,7 @@ word_parser_t *word_parser_init()
     parser->word[0] = '\0';
     parser->word_len = 0;
     parser->quotes_mode = 0;
+    parser->parsed_no_space_symbols_cnt = 0;
 
     return parser;
 }
@@ -68,11 +70,12 @@ static void read_word(word_parser_t *parser, int *last_char)
         if (c == '\n')
             break;
         if (is_space_symbol(c) && !parser->quotes_mode) {
-            if (parser->word_len > 0)
+            if (parser->parsed_no_space_symbols_cnt > 0)
                 break;
             else
                 continue;
         }
+        parser->parsed_no_space_symbols_cnt += 1;
         if (c == '"' && !backslash) {
             if (parser->quotes_mode) {
                 parser->quotes_mode = 0;
@@ -82,7 +85,7 @@ static void read_word(word_parser_t *parser, int *last_char)
             parser->was_quotes = 1;
             continue;
         }
-        if (c == '\\' && !parser->quotes_mode) {
+        if (c == '\\' && !backslash && !parser->quotes_mode) {
             backslash = 1;
             continue;
         }
