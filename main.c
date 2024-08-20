@@ -4,6 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static const char prompt_symbol = '>';
+
+static void print_prompt()
+{
+    printf("%c ", prompt_symbol);
+}
+
 static void words_print(const char *format, const word_list_t *words)
 {
     word_list_item_t *tmp;
@@ -15,7 +22,7 @@ static void add_parsed_word_to_list(const word_parser_t *parser,
                                     word_list_t *list)
 {
     char *word = word_parser_get_word_as_c_str(parser);
-    word_list_add(word, list); 
+    word_list_add(word, list);
 }
 
 static void handle_end_of_line(const word_parser_t *parser, word_list_t *list)
@@ -31,7 +38,7 @@ static void handle_unclosed_quote(word_list_t *list)
     word_list_clear(list);
 }
 
-static int handle_parser_result(enum parser_status status, 
+static int handle_parser_result(enum parser_status status,
                                 const word_parser_t *parser,
                                 word_list_t *list)
 {
@@ -50,6 +57,10 @@ static int handle_parser_result(enum parser_status status,
     case ps_eof:
         return 1;
     }
+
+    if (status != ps_ok)
+        print_prompt();
+
     return 0;
 }
 
@@ -63,12 +74,13 @@ int main()
     word_list_init(list);
 
     parser = word_parser_init();
+    print_prompt();
     do {
         enum parser_status status;
         int res;
         status = word_parser_read(parser);
         res = handle_parser_result(status, parser, list);
-        if (res)
+        if (res != 0)
             break;
     } while (1);
     word_parser_free(parser);

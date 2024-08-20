@@ -38,7 +38,7 @@ void word_parser_free(word_parser_t *parser)
 
 static void word_push_char(char ch, word_parser_t *parser)
 {
-    
+
     if (parser->word_len >= parser->word_capacity) {
         parser->word_capacity *= capacity_grow_coef;
         parser->word = realloc(parser->word, parser->word_capacity);
@@ -54,6 +54,11 @@ static void word_parser_clear(word_parser_t *parser)
     parser->was_quotes = 0;
 }
 
+static int is_space_symbol(char ch)
+{
+    return ch == ' ' || ch == '\t';
+}
+
 static void read_word(word_parser_t *parser, int *last_char)
 {
     int c;
@@ -62,7 +67,7 @@ static void read_word(word_parser_t *parser, int *last_char)
     while ((c = getchar()) != EOF) {
         if (c == '\n')
             break;
-        if (c == ' ' && !parser->quotes_mode) {
+        if (is_space_symbol(c) && !parser->quotes_mode) {
             if (parser->word_len > 0)
                 break;
             else
@@ -87,7 +92,7 @@ static void read_word(word_parser_t *parser, int *last_char)
     }
 
     *last_char = c;
-} 
+}
 
 enum parser_status word_parser_read(word_parser_t *parser)
 {
@@ -104,7 +109,7 @@ enum parser_status word_parser_read(word_parser_t *parser)
             return ps_eoln;
         return ps_ok;
     }
-    
+
     switch (last_char) {
     case EOF:
         return ps_eof;
